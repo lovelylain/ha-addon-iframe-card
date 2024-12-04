@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home Assistant Demo</title>
+    <script type="module" src="/src/addon-iframe-card.ts"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      ha-drawer {
+        display: flex;
+        height: 100vh;
+      }
+      ha-sidebar {
+        width: 55px;
+        background-color: #ccc;
+      }
+      ha-sidebar[open] {
+        width: 255px;
+      }
+      partial-panel-resolver {
+        flex-grow: 1;
+      }
+      iframe {
+        border: 0;
+        height: 100%;
+        width: 100%;
+      }
+      #menu {
+        cursor: pointer;
+        position: relative;
+        z-index: 1;
+        border: none;
+        width: 36px;
+        height: 36px;
+        font-size: 30px;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #666;
+        background-color: transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <home-assistant>
+      <home-assistant-main>
+        <ha-drawer>
+          <ha-sidebar>
+            <button id="menu">☰</button>
+          </ha-sidebar>
+          <partial-panel-resolver>
+            <ha-panel-custom>
+              <addon-iframe-card>
+                <iframe src="https://www.home-assistant.io/"></iframe>
+              </addon-iframe-card>
+            </ha-panel-custom>
+          </partial-panel-resolver>
+        </ha-drawer>
+      </home-assistant-main>
+    </home-assistant>
+    <script>
+      document.getElementById("menu").addEventListener("click", (event) => {
+        event.stopPropagation();
+        document.querySelector("ha-sidebar").toggleAttribute("open");
+      });
+
+      (async () => {
+        await customElements.whenDefined("addon-iframe-card");
+      })();
+    </script>
+  </body>
+</html>
