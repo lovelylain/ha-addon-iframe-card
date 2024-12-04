@@ -9,7 +9,8 @@ import { createHassioSession, fetchHassioAddonInfo, validateHassioSession } from
 
 const BASE_IFRAME_CARD = "hui-iframe-card";
 const BASE_IFRAME_TYPE = "iframe";
-const ADDON_IFRAME_TYPE = "custom:addon-iframe";
+const ADDON_IFRAME_CARD = "addon-iframe-card";
+const ADDON_IFRAME_TYPE = "custom:addon-iframe-card";
 
 interface IframeCardConfig extends LovelaceCardConfig {
   url: string;
@@ -25,6 +26,7 @@ let HuiIframeCard: HuiIframeCardClass;
   let card = customElements.get(BASE_IFRAME_CARD);
   if (card === undefined) {
     (await loadCardHelpers()).createCardElement({ type: BASE_IFRAME_TYPE });
+    await customElements.whenDefined(BASE_IFRAME_CARD);
     card = customElements.get(BASE_IFRAME_CARD);
   }
   HuiIframeCard = card as HuiIframeCardClass;
@@ -58,9 +60,8 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
       this._iframe.hass = hass;
     } else {
       this._hass = hass;
-      if (this._config) {
+      if (this._config && this._config.type === ADDON_IFRAME_TYPE) {
         this._setConfig(hass, this._config);
-        delete this._config;
       }
     }
   }
@@ -98,6 +99,14 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
   }
 
   private async _setConfig(hass: HomeAssistant, config: IframeCardConfig) {
+    // update config
+    config = (() => {
+      const { type, ...extra } = config;
+      if (!this._config || this._config.type === ADDON_IFRAME_TYPE) {
+        this._config = <IframeCardConfig>{ type: BASE_IFRAME_TYPE };
+      }
+      return Object.assign(this._config, extra);
+    })();
     // get addon slug and real url
     const slug = await this._fixConfig(hass, config);
     if (slug) {
@@ -139,12 +148,11 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
     if (!addon.ingress_url) {
       throw new Error(`Add-on '${slug}' does not support Ingress`);
     }
-    config.url = addon.ingress_url.replace(/\/+$/, "") + url;
+    config.url = `${addon.ingress_url.replace(/\/+$/, "")}/${url}`;
     return slug;
   }
 
   private async _updateIframe(config: IframeCardConfig) {
-    config.type = BASE_IFRAME_TYPE;
     let iframe = this._iframe;
     if (iframe) {
       iframe.setConfig(config);
@@ -164,4 +172,4 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
   }
 }
 
-customElements.define("addon-iframe-card", AddonIframeCard);
+customElements.define(ADDON_IFRAME_CARD, AddonIframeCard);
