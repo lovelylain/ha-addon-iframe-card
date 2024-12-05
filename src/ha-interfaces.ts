@@ -23,3 +23,17 @@ interface CustomCardHelpers {
 }
 
 export const loadCardHelpers: () => Promise<CustomCardHelpers> = (window as any).loadCardHelpers;
+
+interface CustomCardEntry {
+  type: string;
+  name?: string;
+  description?: string;
+  preview?: boolean;
+  documentationURL?: string;
+}
+
+export const registerCustomCard = (card: CustomCardEntry) => {
+  const win = window as unknown as { customCards?: CustomCardEntry[] };
+  const customCards = win.customCards || (win.customCards = []);
+  customCards.push(card);
+};

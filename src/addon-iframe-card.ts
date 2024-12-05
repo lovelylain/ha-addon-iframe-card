@@ -4,13 +4,14 @@ import {
   LovelaceCardEditor,
   loadCardHelpers,
   HomeAssistant,
+  registerCustomCard,
 } from "./ha-interfaces";
 import { createHassioSession, fetchHassioAddonInfo, validateHassioSession } from "./hassio-ingress";
 
 const BASE_IFRAME_CARD = "hui-iframe-card";
 const BASE_IFRAME_TYPE = "iframe";
 const ADDON_IFRAME_CARD = "addon-iframe-card";
-const ADDON_IFRAME_TYPE = "custom:addon-iframe-card";
+const ADDON_IFRAME_TYPE = `custom:${ADDON_IFRAME_CARD}`;
 
 interface IframeCardConfig extends LovelaceCardConfig {
   url: string;
@@ -60,7 +61,7 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
       this._iframe.hass = hass;
     } else {
       this._hass = hass;
-      if (this._config && this._config.type === ADDON_IFRAME_TYPE) {
+      if (this._config && this._config.type !== BASE_IFRAME_TYPE) {
         this._setConfig(hass, this._config);
       }
     }
@@ -102,7 +103,7 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
     // update config
     config = (() => {
       const { type, ...extra } = config;
-      if (!this._config || this._config.type === ADDON_IFRAME_TYPE) {
+      if (!this._config || this._config.type !== BASE_IFRAME_TYPE) {
         this._config = <IframeCardConfig>{ type: BASE_IFRAME_TYPE };
       }
       return Object.assign(this._config, extra);
@@ -173,3 +174,9 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
 }
 
 customElements.define(ADDON_IFRAME_CARD, AddonIframeCard);
+registerCustomCard({
+  type: ADDON_IFRAME_CARD,
+  name: "Webpage ingress",
+  description: "Webpage card with addon ingress support.",
+  documentationURL: "https://github.com/lovelylain/ha-addon-iframe-card",
+});
