@@ -1,4 +1,4 @@
-# ha-addon-ingress-card
+# ha-addon-iframe-card
 
 HA webpage card with addon ingress support.
 

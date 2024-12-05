@@ -176,7 +176,7 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
 customElements.define(ADDON_IFRAME_CARD, AddonIframeCard);
 registerCustomCard({
   type: ADDON_IFRAME_CARD,
-  name: "Webpage ingress",
+  name: "Ingress webpage",
   description: "Webpage card with addon ingress support.",
   documentationURL: "https://github.com/lovelylain/ha-addon-iframe-card",
 });
