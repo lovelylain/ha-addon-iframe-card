@@ -6,7 +6,7 @@ import {
   HomeAssistant,
   registerCustomCard,
 } from "./ha-interfaces";
-import { createHassioSession, fetchHassioAddonInfo, validateHassioSession } from "./hassio-ingress";
+import { fetchHassioAddonInfo, ingressSession } from "./hassio-ingress";
 
 const BASE_IFRAME_CARD = "hui-iframe-card";
 const BASE_IFRAME_TYPE = "iframe";
@@ -38,7 +38,7 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
   private _layout?: string;
   private _iframe?: LovelaceCard;
   private _config?: IframeCardConfig;
-  private _sessionKeepAlive?: number;
+  private _isIngress?: boolean;
 
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     return await HuiIframeCard.getConfigElement();
@@ -50,9 +50,15 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
     return config;
   }
 
+  public connectedCallback() {
+    if (this._isIngress) {
+      ingressSession.init(this.hass!);
+    }
+  }
+
   public disconnectedCallback() {
-    if (this._sessionKeepAlive) {
-      clearInterval(this._sessionKeepAlive);
+    if (this._isIngress) {
+      ingressSession.fini();
     }
   }
 
@@ -109,38 +115,28 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
       return Object.assign(this._config, extra);
     })();
     // get addon slug and real url
-    const slug = await this._fixConfig(hass, config);
-    if (slug) {
-      // addon ingress
-      if (this._sessionKeepAlive === undefined) {
-        let session: string;
-        try {
-          session = await createHassioSession(hass);
-        } catch (err) {
-          throw new Error(`Unable to create an Ingress session`);
-        }
-        this._sessionKeepAlive = window.setInterval(async () => {
-          const hass = this.hass as HomeAssistant;
-          try {
-            await validateHassioSession(hass, session);
-          } catch (err: any) {
-            session = await createHassioSession(hass);
-          }
-        }, 60000);
-      }
-    } else {
-      // not addon ingress
-      if (this._sessionKeepAlive) {
-        clearInterval(this._sessionKeepAlive);
-      }
+    const isIngress = await this._fixConfig(hass, config);
+    if (isIngress && !(await ingressSession.init(hass))) {
+      throw new Error(`Unable to create an Ingress session`);
+    }
+    if (this._isIngress) {
+      ingressSession.fini();
+      delete this._isIngress;
+    }
+    if (isIngress) {
+      this._isIngress = true;
     }
     // update iframe card
     await this._updateIframe(config);
   }
 
-  private async _fixConfig(hass: HomeAssistant, config: IframeCardConfig): Promise<string> {
+  private async _fixConfig(hass: HomeAssistant, config: IframeCardConfig): Promise<boolean> {
+    if (/^((\w+:)?\/\/[^/]+)?\/api\/hassio_ingress\/[^/]+/.test(config.url)) {
+      // All ingresses share the same session, so treat the url as ingress if it match
+      return true;
+    }
     const match = config.url.match(/^([\w-]+)(?:$|\/)(.*)/);
-    if (!match) return "";
+    if (!match) return false;
     const [, slug, url] = match;
     const addon = await fetchHassioAddonInfo(hass, slug);
     if (!addon) {
@@ -150,7 +146,7 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
       throw new Error(`Add-on '${slug}' does not support Ingress`);
     }
     config.url = `${addon.ingress_url.replace(/\/+$/, "")}/${url}`;
-    return slug;
+    return true;
   }
 
   private async _updateIframe(config: IframeCardConfig) {
