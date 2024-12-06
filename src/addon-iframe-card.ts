@@ -39,6 +39,7 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
   private _iframe?: LovelaceCard;
   private _config?: IframeCardConfig;
   private _isIngress?: boolean;
+  private _disconnected? = true;
 
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     return await HuiIframeCard.getConfigElement();
@@ -51,12 +52,14 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
   }
 
   public connectedCallback() {
+    delete this._disconnected;
     if (this._isIngress) {
       ingressSession.init(this.hass!);
     }
   }
 
   public disconnectedCallback() {
+    this._disconnected = true;
     if (this._isIngress) {
       ingressSession.fini();
     }
@@ -125,6 +128,9 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
     }
     if (isIngress) {
       this._isIngress = true;
+      if (this._disconnected) {
+        ingressSession.fini();
+      }
     }
     // update iframe card
     await this._updateIframe(config);
