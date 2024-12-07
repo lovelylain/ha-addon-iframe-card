@@ -10,6 +10,7 @@ export interface HomeAssistant {
 export interface LovelaceCard extends HTMLElement {
   hass?: HomeAssistant;
   layout?: string;
+  isPanel?: boolean;
   getCardSize(): number | Promise<number>;
   setConfig(config: LovelaceCardConfig): void;
 }

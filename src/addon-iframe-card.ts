@@ -34,8 +34,11 @@ let HuiIframeCard: HuiIframeCardClass;
 })();
 
 class AddonIframeCard extends HTMLElement implements LovelaceCard {
-  private _hass?: HomeAssistant;
-  private _layout?: string;
+  private _data?: {
+    hass?: HomeAssistant;
+    layout?: string;
+    isPanel?: boolean;
+  } = {};
   private _iframe?: LovelaceCard;
   private _config?: IframeCardConfig;
   private _isIngress?: boolean;
@@ -69,7 +72,7 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
     if (this._iframe) {
       this._iframe.hass = hass;
     } else {
-      this._hass = hass;
+      this._data!.hass = hass;
       if (this._config && this._config.type !== BASE_IFRAME_TYPE) {
         this._setConfig(hass, this._config);
       }
@@ -77,19 +80,31 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
   }
 
   get hass(): HomeAssistant | undefined {
-    return this._iframe ? this._iframe.hass : this._hass;
+    return this._iframe ? this._iframe.hass : this._data!.hass;
   }
 
   set layout(layout: string) {
     if (this._iframe) {
       this._iframe.layout = layout;
     } else {
-      this._layout = layout;
+      this._data!.layout = layout;
     }
   }
 
   get layout(): string | undefined {
-    return this._iframe ? this._iframe.layout : this._layout;
+    return this._iframe ? this._iframe.layout : this._data!.layout;
+  }
+
+  set isPanel(isPanel: boolean) {
+    if (this._iframe) {
+      this._iframe.isPanel = isPanel;
+    } else {
+      this._data!.isPanel = isPanel;
+    }
+  }
+
+  get isPanel(): boolean | undefined {
+    return this._iframe ? this._iframe.isPanel : this._data!.isPanel;
   }
 
   public getCardSize(): number | Promise<number> {
@@ -161,16 +176,9 @@ class AddonIframeCard extends HTMLElement implements LovelaceCard {
       iframe.setConfig(config);
     } else {
       this._iframe = (await loadCardHelpers()).createCardElement(config);
-      iframe = this._iframe;
+      iframe = Object.assign(this._iframe, this._data);
+      delete this._data;
       this.appendChild(iframe);
-      if (this._layout !== undefined) {
-        iframe.layout = this._layout;
-        delete this._layout;
-      }
-      if (this._hass) {
-        iframe.hass = this._hass;
-        delete this._hass;
-      }
     }
   }
 }
