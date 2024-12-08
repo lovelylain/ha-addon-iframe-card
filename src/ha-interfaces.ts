@@ -1,17 +1,14 @@
+export interface HomeAssistant {
+  callWS<T>(msg: Record<string, any>): Promise<T>;
+}
+
 export interface LovelaceCardConfig {
   type: string;
   [key: string]: any;
 }
 
-export interface HomeAssistant {
-  callWS<T>(msg: Record<string, any>): Promise<T>;
-}
-
 export interface LovelaceCard extends HTMLElement {
   hass?: HomeAssistant;
-  layout?: string;
-  isPanel?: boolean;
-  getCardSize(): number | Promise<number>;
   setConfig(config: LovelaceCardConfig): void;
 }
 
