@@ -40,8 +40,7 @@ interface HuiIframeCardClass extends HuiIframeCard {
     private readonly _data: {
       config?: IframeCardConfig;
       isIngress?: boolean;
-      disconnected?: boolean;
-    } = { disconnected: true };
+    } = {};
 
     public static getStubConfig(): IframeCardConfig {
       const config = super.getStubConfig();
@@ -50,7 +49,6 @@ interface HuiIframeCardClass extends HuiIframeCard {
     }
 
     public connectedCallback() {
-      delete this._data.disconnected;
       if (this._data.isIngress) {
         ingressSession.init(this.hass!);
       }
@@ -59,7 +57,6 @@ interface HuiIframeCardClass extends HuiIframeCard {
 
     public disconnectedCallback() {
       super.disconnectedCallback();
-      this._data.disconnected = true;
       if (this._data.isIngress) {
         ingressSession.fini();
       }
@@ -108,7 +105,7 @@ interface HuiIframeCardClass extends HuiIframeCard {
       }
       if (isIngress) {
         this._data.isIngress = true;
-        if (this._data.disconnected) {
+        if (!this.isConnected) {
           ingressSession.fini();
         }
       }

@@ -1,0 +1,23 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Upload
+      uses: ncipollo/release-action@main
+      with:
+        allowUpdates: true
+        omitNameDuringUpdate: true
+        omitBodyDuringUpdate: true
+        artifacts: dist/addon-iframe-card.js
+        token: ${{ secrets.GITHUB_TOKEN }}
