@@ -3,9 +3,14 @@
 HA webpage card with addon ingress support.
 
 ![GitHub actions](https://github.com/lovelylain/ha-addon-iframe-card/actions/workflows/validate.yaml/badge.svg)
-<a href="https://www.buymeacoffee.com/lovelylain" target="_blank"><img alt="Buy Me A Coffee" src="https://cdn.buymeacoffee.com/buttons/v2/arial-yellow.png" height="20px"></a>
 
 The [webpage card](https://www.home-assistant.io/dashboards/iframe/) allows you to embed your favorite webpage right into Home Assistant. This custom card `Ingress webpage card` provides support for addon ingress.
+
+**💡 Tip:** If this project helps you, consider giving me a tip for the time I spent building this project:
+
+<a href="https://www.buymeacoffee.com/lovelylain" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/default-yellow.png" alt="Buy Me A Coffee" width="150px">
+</a>
 
 ## Installation
 
@@ -25,7 +30,7 @@ _or_
 
 ### Manual
 
-1. Download [addon-iframe-card.js](https://raw.githubusercontent.com/lovelylain/ha-addon-iframe-card/refs/heads/main/dist/addon-iframe-card.js) file.
+1. Download [addon-iframe-card.js](https://github.com/lovelylain/ha-addon-iframe-card/releases/latest/download/addon-iframe-card.js) file.
 2. Put `addon-iframe-card.js` file into your `config/www` folder.
 3. Add reference to `addon-iframe-card.js` in Dashboard. There's two way to do that:
    - **Using UI:** _Settings_ → _Dashboards_ → _More Options icon_ → _Resources_ → _Add Resource_ → Set _Url_ as `/local/addon-iframe-card.js` → Set _Resource type_ as `JavaScript Module`.
